@@ -99,7 +99,8 @@ class Database {
                     role: 'admin',
                     first_name: 'ผู้ดูแล',
                     last_name: 'ระบบ',
-                    nickname: 'แอดมิน'
+                    nickname: 'แอดมิน',
+                    class_name: null
                 },
                 {
                     id: 'usr_teacher1',
@@ -108,7 +109,8 @@ class Database {
                     role: 'teacher',
                     first_name: 'วรรณภา',
                     last_name: 'ใจงาม',
-                    nickname: 'ครูวรรณ'
+                    nickname: 'ครูวรรณ',
+                    class_name: 'อ.1/1'
                 }
             ];
             localStorage.setItem('db_users', JSON.stringify(defaultUsers));
@@ -487,7 +489,7 @@ class Database {
         return JSON.parse(localStorage.getItem('db_users')) || [];
     }
 
-    async addUser(username, password, role, firstName, lastName, nickname) {
+    async addUser(username, password, role, firstName, lastName, nickname, className) {
         const id = 'usr_' + Math.random().toString(36).substr(2, 9);
         if (this.isSupabaseActive()) {
             try {
@@ -500,7 +502,8 @@ class Database {
                         role,
                         first_name: firstName,
                         last_name: lastName,
-                        nickname
+                        nickname,
+                        class_name: className
                     }])
                     .select();
                 if (error) throw error;
@@ -514,13 +517,13 @@ class Database {
         if (users.some(u => u.username === username)) {
             throw new Error('ชื่อผู้ใช้งานนี้มีอยู่ในระบบแล้ว');
         }
-        const newUser = { id, username, password, role, first_name: firstName, last_name: lastName, nickname };
+        const newUser = { id, username, password, role, first_name: firstName, last_name: lastName, nickname, class_name: className };
         users.push(newUser);
         localStorage.setItem('db_users', JSON.stringify(users));
         return newUser;
     }
 
-    async editUser(id, username, password, role, firstName, lastName, nickname) {
+    async editUser(id, username, password, role, firstName, lastName, nickname, className) {
         if (this.isSupabaseActive()) {
             try {
                 const { data, error } = await this.supabase
@@ -531,7 +534,8 @@ class Database {
                         role,
                         first_name: firstName,
                         last_name: lastName,
-                        nickname
+                        nickname,
+                        class_name: className
                     })
                     .eq('id', id)
                     .select();
@@ -554,6 +558,7 @@ class Database {
             users[idx].first_name = firstName;
             users[idx].last_name = lastName;
             users[idx].nickname = nickname;
+            users[idx].class_name = className;
             localStorage.setItem('db_users', JSON.stringify(users));
             return users[idx];
         }

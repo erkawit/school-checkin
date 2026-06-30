@@ -9,7 +9,7 @@ let dataTableInstance = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     // Initial setup
-    checkTeacherSession();
+    checkUserSession();
     setupEventListeners();
     
     // Initialize Custom Thai DatePicker for teacher check-in
@@ -26,10 +26,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function checkTeacherSession() {
-    const session = localStorage.getItem('teacherInfo');
-    if (session) {
-        currentTeacher = JSON.parse(session);
+function checkUserSession() {
+    const adminSession = localStorage.getItem('adminSession');
+    const teacherSession = localStorage.getItem('teacherInfo');
+    
+    if (adminSession === 'true') {
+        showSection('admin-section');
+        if (window.initAdminDashboard) {
+            window.initAdminDashboard();
+        }
+    } else if (teacherSession) {
+        currentTeacher = JSON.parse(teacherSession);
         document.getElementById('teacher-name-display').innerText = 
             `คุณครู: ${currentTeacher.firstName} ${currentTeacher.lastName} (${currentTeacher.nickname})`;
         showSection('class-selection');
@@ -76,7 +83,7 @@ async function handleLogin() {
         const user = await window.db.login(username, password);
         
         if (user.role === 'admin') {
-            sessionStorage.setItem('adminSession', 'true');
+            localStorage.setItem('adminSession', 'true');
             // Reset input values
             if (usernameInput) usernameInput.value = '';
             if (passwordInput) passwordInput.value = '';
@@ -98,7 +105,8 @@ async function handleLogin() {
                 firstName: user.first_name, 
                 lastName: user.last_name, 
                 nickname: user.nickname,
-                username: user.username
+                username: user.username,
+                class_name: user.class_name
             };
             localStorage.setItem('teacherInfo', JSON.stringify(currentTeacher));
             
@@ -158,7 +166,7 @@ function updateHeaderUserPanel() {
     if (!panel) return;
 
     const teacherInfoStr = localStorage.getItem('teacherInfo');
-    const isAdmin = sessionStorage.getItem('adminSession') === 'true';
+    const isAdmin = localStorage.getItem('adminSession') === 'true';
 
     let content = '';
 
@@ -207,7 +215,18 @@ function showSection(sectionId) {
 async function loadClasses(level) {
     currentLevel = level;
     
-    // Update active tab styling in level selectors
+    const classList = document.getElementById('class-list');
+    if (!classList) return;
+    
+    // Check if teacher is assigned to a specific class
+    const hasAssignedClass = currentTeacher && currentTeacher.class_name;
+    
+    // Update active tab styling and toggle visibility of level selection tabs
+    const levelNav = document.querySelector('.level-nav-container');
+    if (levelNav) {
+        levelNav.style.display = hasAssignedClass ? 'none' : 'flex';
+    }
+
     const buttons = document.querySelectorAll('.level-tab');
     buttons.forEach(btn => {
         if (btn.dataset.level === level) {
@@ -217,9 +236,6 @@ async function loadClasses(level) {
         }
     });
 
-    const classList = document.getElementById('class-list');
-    if (!classList) return;
-    
     classList.innerHTML = `
         <div class="col-span-full text-center py-8 text-slate-600">
             <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500 mb-2"></div>
@@ -228,7 +244,14 @@ async function loadClasses(level) {
     `;
 
     try {
-        const classes = await window.db.getClasses(level);
+        let classes = [];
+        if (hasAssignedClass) {
+            // Fetch all classes and filter for the assigned one
+            const allConfiguredClasses = await window.db.getClasses(null);
+            classes = allConfiguredClasses.filter(c => c.name === currentTeacher.class_name);
+        } else {
+            classes = await window.db.getClasses(level);
+        }
         classList.innerHTML = '';
 
         if (classes.length === 0) {
