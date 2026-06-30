@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบเช็คชื่อนักเรียน (Attendance System)</title>
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- jQuery & DataTables CSS & JS -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+    <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css" />
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+
+    <!-- Tailwind CSS for layout utilities -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom CSS (Premium Styles) -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+    <!-- Background glowing ambient blobs -->
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <!-- Header bar containing app settings toggles -->
+    <header class="w-full max-w-5xl flex justify-between items-center mb-8 px-4">
+        <div class="flex items-center gap-3">
+            <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-pink-500 to-rose-400 flex items-center justify-center shadow-lg shadow-pink-500/20">
+                <span class="text-white font-bold text-lg">📝</span>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-slate-800">ระบบเช็คชื่อนักเรียน</h1>
+                <p class="text-xs text-slate-500">Attendance Portal</p>
+            </div>
+        </div>
+        <div class="flex gap-2 items-center" id="header-user-panel">
+            <button onclick="toggleSettingsModal(true)" class="btn-secondary px-3 py-2 text-sm" title="ตั้งค่าฐานข้อมูล">
+                ⚙️ เชื่อมต่อ Supabase
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="w-full max-w-5xl px-4 flex-grow flex flex-col justify-center">
+
+        <!-- 1. ส่วนล็อกอินคุณครู / ผู้ดูแลระบบ -->
+        <section id="login-section" class="glass-panel w-full max-w-md mx-auto p-8" style="display: none;">
+            <h2 class="text-2xl font-bold text-center mb-2 text-slate-800">เข้าสู่ระบบ</h2>
+            <p class="text-xs text-slate-500 text-center mb-6">ระบบเช็คชื่อนักเรียน (Attendance Portal)</p>
+            <div class="space-y-5">
+                <div>
+                    <label class="input-label">ชื่อผู้ใช้ (Username)</label>
+                    <input type="text" id="login-username" class="input-field" placeholder="ป้อนชื่อผู้ใช้" autocomplete="username">
+                </div>
+                <div>
+                    <label class="input-label">รหัสผ่าน (Password)</label>
+                    <input type="password" id="login-password" class="input-field" placeholder="ป้อนรหัสผ่าน" autocomplete="current-password">
+                </div>
+                <button onclick="handleLogin()" class="btn-primary w-full mt-4 py-3">
+                    เข้าสู่ระบบ
+                </button>
+            </div>
+            <div class="mt-6 pt-4 border-t border-stone-200 text-center">
+                <button onclick="checkAdminSession()" class="text-xs text-slate-400 hover:text-slate-500 transition font-medium">
+                    🔑 สิทธิ์ผู้ดูแลระบบแยกต่างหาก (Admin Bypass)
+                </button>
+            </div>
+        </section>
+
+        <!-- 2. ส่วนเลือกระดับชั้นเรียน -->
+        <section id="class-selection" class="glass-panel w-full p-8" style="display: none;">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">เลือกระดับชั้นเรียน</h2>
+                    <span id="teacher-name-display" class="text-sm text-pink-600 font-medium">คุณครู: </span>
+                </div>
+                <div class="flex gap-2 w-full md:w-auto">
+                    <button onclick="checkAdminSession()" class="btn-secondary py-2 text-sm flex-1 md:flex-initial">แผงควบคุม Admin</button>
+                    <button onclick="handleLogout()" class="btn-danger py-2 text-sm flex-1 md:flex-initial">ออกจากระบบ</button>
+                </div>
+            </div>
+            
+            <!-- ระดับการศึกษา (iOS Segmented style) -->
+            <div class="level-nav-container mb-8">
+                <button onclick="loadClasses('อนุบาล')" class="level-tab active" data-level="อนุบาล">ระดับอนุบาล</button>
+                <button onclick="loadClasses('ประถม')" class="level-tab" data-level="ประถม">ระดับประถม</button>
+                <button onclick="loadClasses('มัธยม')" class="level-tab" data-level="มัธยม">ระดับมัธยม</button>
+            </div>
+
+            <!-- รายการห้องเรียน -->
+            <div id="class-list" class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full">
+                <!-- เจนปุ่มห้องเรียนด้วย JS -->
+            </div>
+        </section>
+
+        <!-- 3. ส่วนรายชื่อนักเรียนเช็คชื่อ -->
+        <section id="student-list-section" class="glass-panel w-full p-8" style="display: none;">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-6 border-b border-stone-200">
+                <div>
+                    <h2 id="current-class-title" class="text-2xl font-bold text-slate-800">รายชื่อนักเรียนชั้น: </h2>
+                    <p class="text-xs text-slate-500 mt-1">กรุณาเลือกสถานะการมาเรียนของนักเรียนแต่ละคน</p>
+                </div>
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <div class="text-left w-full md:w-auto">
+                        <label class="input-label mb-1 text-xs">เลือกวันที่เช็คชื่อ</label>
+                        <div class="relative inline-block text-left" id="attendance-date-container">
+                            <input type="hidden" id="attendance-date" value="">
+                            <button type="button" id="attendance-date-btn" class="input-field py-1.5 text-sm flex justify-between items-center gap-2" style="min-width: 165px;">
+                                <span class="date-text">กำลังโหลด...</span>
+                                <span>📅</span>
+                            </button>
+                        </div>
+                    </div>
+                    <button onclick="goBackToClasses()" class="btn-secondary py-2 text-sm self-end">ย้อนกลับ</button>
+                </div>
+            </div>
+
+            <!-- ส่วนแสดงความคืบหน้าการเช็คชื่อ -->
+            <div class="mb-6 bg-stone-50 p-4 border border-stone-200 rounded-xl">
+                <div class="flex justify-between items-center text-xs font-semibold text-slate-600 mb-2">
+                    <span id="attendance-progress-text">เช็คชื่อแล้ว 0 จาก 0 คน (0%)</span>
+                    <span>สถานะความคืบหน้า</span>
+                </div>
+                <div class="progress-container">
+                    <div id="attendance-progress-bar" class="progress-bar" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <!-- รายชื่อนักเรียน (DataTables สำหรับจอใหญ่ / การ์ดแนวตั้งสำหรับจอเล็ก) -->
+            <div id="students-container" class="min-h-[200px] overflow-x-auto">
+                <!-- เจนโดย JS -->
+            </div>
+
+            <!-- ปุ่มจัดการบันทึกข้อมูลด้านล่าง -->
+            <div class="flex justify-between items-center mt-8 pt-6 border-t border-stone-200">
+                <button onclick="clearCacheAndCancel()" class="btn-danger">ยกเลิกทั้งหมด</button>
+                <button onclick="submitAttendance()" class="btn-primary px-8">บันทึกข้อมูลการเข้าเรียน</button>
+            </div>
+        </section>
+
+        <!-- 4. ส่วนแผงควบคุมผู้ดูแลระบบ (Admin Section) -->
+        <section id="admin-section" class="glass-panel w-full p-8" style="display: none;">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-6 border-b border-stone-200">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-800">แผงควบคุมระบบ (Admin Panel)</h2>
+                    <p class="text-xs text-pink-600 font-medium">ล็อกอินในฐานะผู้ดูแลระบบสูงสุด</p>
+                </div>
+                <button onclick="exitAdmin()" class="btn-secondary py-2 text-sm w-full md:w-auto">
+                    🚪 กลับหน้าเมนูครู
+                </button>
+            </div>
+
+            <!-- แท็บเมนูจัดการใน Admin -->
+            <div class="tabs-container">
+                <button class="tab-btn active" data-tab="overview">สรุปวันนี้</button>
+                <button class="tab-btn" data-tab="students">จัดการนักเรียน</button>
+                <button class="tab-btn" data-tab="classes">จัดการห้องเรียน</button>
+                <button class="tab-btn" data-tab="promotion">เลื่อนชั้นเรียน</button>
+                <button class="tab-btn" data-tab="reports">รายงาน & ส่งออก</button>
+                <button class="tab-btn" data-tab="users">จัดการผู้ใช้งาน</button>
+            </div>
+
+            <!-- 4.1 แท็บภาพรวม (Overview) -->
+            <div id="tab-overview" class="tab-content active">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-6">
+                    <h3 class="text-lg font-bold text-slate-800">สถานะนักเรียนภาพรวม</h3>
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs text-slate-500 font-medium">ระบุวันที่ดู:</label>
+                        <div class="relative inline-block text-left" id="admin-dashboard-date-container">
+                            <input type="hidden" id="admin-dashboard-date" value="">
+                            <button type="button" id="admin-dashboard-date-btn" class="input-field py-1.5 text-xs flex justify-between items-center gap-2" style="min-width: 140px;">
+                                <span class="date-text">กำลังโหลด...</span>
+                                <span>📅</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="admin-grid">
+                    <div class="stat-card">
+                        <span class="stat-num" id="stat-total-students">0</span>
+                        <span class="stat-label">นักเรียนทั้งหมด</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-num" id="stat-checked-count">0</span>
+                        <span class="stat-label">เช็คชื่อแล้ววันนี้</span>
+                    </div>
+                    <div class="stat-card present">
+                        <span class="stat-num text-emerald-600" id="stat-present-count">0</span>
+                        <span class="stat-label">มาเรียน (Present)</span>
+                    </div>
+                    <div class="stat-card absent">
+                        <span class="stat-num text-red-600" id="stat-absent-count">0</span>
+                        <span class="stat-label">ขาดเรียน (Absent)</span>
+                    </div>
+                    <div class="stat-card sick-late">
+                        <span class="stat-num text-orange-600" id="stat-sick-late">0</span>
+                        <span class="stat-label">ลา / สาย / อื่นๆ</span>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <h4 class="text-sm font-semibold text-slate-700 mb-4">อัตราการเช็คชื่อรายห้องเรียน</h4>
+                    <div id="class-overview-list" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <!-- รายชื่อห้องเจ็นด้วย JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4.2 แท็บรายชื่อนักเรียน (Students list) -->
+            <div id="tab-students" class="tab-content">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <h3 class="text-lg font-bold text-slate-800">จัดการข้อมูลนักเรียน</h3>
+                    <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                        <input type="file" id="excel-upload-input" accept=".xlsx, .xls" class="hidden" onchange="handleExcelUpload(event)">
+                        <button onclick="document.getElementById('excel-upload-input').click()" class="btn-secondary py-2 text-xs">
+                            📥 นำเข้าจาก Excel (.xlsx)
+                        </button>
+                        <button onclick="addStudentPrompt()" class="btn-primary py-2 text-xs">
+                            ➕ เพิ่มนักเรียนใหม่
+                        </button>
+                    </div>
+                </div>
+                <div id="admin-students-list" class="overflow-x-auto min-h-[300px]">
+                    <!-- รายชื่อนักเรียนเจ็นด้วย JS -->
+                </div>
+            </div>
+
+            <!-- 4.3 แท็บรายชื่อห้องเรียน (Classes list) -->
+            <div id="tab-classes" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-slate-800">จัดการข้อมูลห้องเรียน</h3>
+                    <button onclick="addClassPrompt()" class="btn-primary py-2 text-xs">
+                        ➕ เพิ่มห้องเรียนใหม่
+                    </button>
+                </div>
+                <div id="admin-classes-list" class="overflow-x-auto min-h-[300px]">
+                    <!-- รายชื่อห้องเจ็นด้วย JS -->
+                </div>
+            </div>
+
+            <!-- 4.4 แท็บส่งออกข้อมูลประวัติ (Historical Reports) -->
+            <div id="tab-reports" class="tab-content">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 p-4 bg-stone-50 border border-stone-200 rounded-xl">
+                    <div class="flex flex-wrap gap-4 w-full md:w-auto">
+                        <div class="text-left">
+                            <label class="input-label mb-1 text-xs">เลือกวันที่</label>
+                            <div class="relative inline-block text-left" id="admin-report-filter-date-container">
+                                <input type="hidden" id="admin-report-filter-date" value="">
+                                <button type="button" id="admin-report-filter-date-btn" class="input-field py-1.5 text-xs flex justify-between items-center gap-2" style="min-width: 140px;">
+                                    <span class="date-text">กำลังโหลด...</span>
+                                    <span>📅</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="text-left">
+                            <label class="input-label mb-1 text-xs">กรองเฉพาะห้องเรียน</label>
+                            <select id="admin-report-filter-class" class="input-field py-1.5 text-xs" style="min-width: 120px;">
+                                <option value="">-- ทุกห้องเรียน --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button onclick="exportToCSV()" class="btn-primary py-2 text-xs w-full md:w-auto">
+                        📥 ส่งออกเป็นไฟล์ Excel/CSV (Thai Encoding)
+                    </button>
+                </div>
+
+                <div id="admin-reports-list" class="overflow-x-auto min-h-[300px]">
+                    <!-- ประวัติการเช็คชื่อเจ็นด้วย JS -->
+                </div>
+            </div>
+
+            <!-- 4.5 แท็บเลื่อนชั้นเรียน (Class Promotion) -->
+            <div id="tab-promotion" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-slate-800">เลื่อนชั้นเรียนนักเรียน (Class Promotion)</h3>
+                </div>
+                
+                <div class="p-6 bg-stone-50 border border-stone-200 rounded-xl mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="input-label">1. เลือกห้องเรียนต้นทาง (Source Class)</label>
+                            <select id="promote-source-class" class="input-field" onchange="loadPromoteStudentsList()">
+                                <option value="">-- เลือกห้องเรียน --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="input-label">2. เลือกห้องเรียนปลายทาง (Target Class)</label>
+                            <select id="promote-target-class" class="input-field">
+                                <option value="">-- เลือกห้องเรียน --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center mb-4">
+                    <h4 class="font-bold text-slate-700">รายชื่อนักเรียนในห้องเรียนต้นทาง</h4>
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="promote-select-all" class="h-4 w-4 rounded border-stone-300 text-pink-600 focus:ring-pink-500" onchange="toggleSelectAllPromotion(this)">
+                        <label for="promote-select-all" class="text-xs font-semibold text-slate-600 cursor-pointer">เลือกทั้งหมด (Select All)</label>
+                    </div>
+                </div>
+
+                <div class="max-h-[350px] overflow-y-auto border border-stone-200 rounded-xl bg-white p-4 mb-6">
+                    <div id="promote-students-list" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="col-span-full text-slate-400 text-center py-8">กรุณาเลือกห้องเรียนต้นทาง</div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button onclick="executePromotion()" class="btn-primary">
+                        🚀 ดำเนินการเลื่อนชั้นเรียน
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4.6 แท็บจัดการผู้ใช้งาน (Users management) -->
+            <div id="tab-users" class="tab-content">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-slate-800">จัดการข้อมูลผู้ใช้งาน (ครู / แอดมิน)</h3>
+                    <button onclick="addUserPrompt()" class="btn-primary py-2 text-xs">
+                        ➕ เพิ่มผู้ใช้งานใหม่
+                    </button>
+                </div>
+                <div id="admin-users-list" class="overflow-x-auto min-h-[300px]">
+                    <!-- รายชื่อผู้ใช้งานเจ็นด้วย JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Settings modal (Supabase configuration panel) -->
+    <div id="settings-modal" class="settings-modal glass-panel p-6">
+        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+            🔗 ตั้งค่าระบบฐานข้อมูล Supabase
+        </h3>
+        <p class="text-xs text-slate-500 mb-6">
+            หากมี Supabase ฐานข้อมูลของตัวเอง คุณสามารถนำข้อมูล API Key มาใส่เพื่อซิงค์ข้อมูลจริงได้ทันที หากปล่อยว่างไว้ระบบจะทำงานบนหน่วยความจำ LocalStorage (Mock) แทนอัตโนมัติ
+        </p>
+
+        <div class="space-y-4">
+            <div>
+                <label class="input-label text-xs">Supabase URL</label>
+                <input type="text" id="setting-supabase-url" class="input-field text-xs font-mono" placeholder="https://xxxxxx.supabase.co">
+            </div>
+            <div>
+                <label class="input-label text-xs">Supabase Anon Key</label>
+                <input type="password" id="setting-supabase-key" class="input-field text-xs font-mono" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+            </div>
+            
+            <div class="flex gap-2 pt-4">
+                <button onclick="saveSupabaseSettings()" class="btn-primary flex-grow text-xs py-2.5">บันทึกเชื่อมต่อ</button>
+                <button onclick="toggleSettingsModal(false)" class="btn-secondary text-xs py-2.5">ปิดหน้าต่าง</button>
+            </div>
+        </div>
+    </div>
+
+
+            <!-- Modal overlay background -->
+            <div id="modal-overlay" class="modal-overlay" onclick="toggleSettingsModal(false)"></div>
+
+    <!-- Script loading layers -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="datepicker.js"></script>
+    <script src="database.js"></script>
+    <script src="app.js"></script>
+    <script src="admin.js"></script>
+
+    <script>
+        // Modal management operations
+        function toggleSettingsModal(show) {
+            const modal = document.getElementById('settings-modal');
+            const overlay = document.getElementById('modal-overlay');
+            if (show) {
+                // Populate current settings
+                const config = window.db.getConfig();
+                document.getElementById('setting-supabase-url').value = config.url;
+                document.getElementById('setting-supabase-key').value = config.key;
+
+                modal.classList.add('active');
+                overlay.classList.add('active');
+            } else {
+                modal.classList.remove('active');
+                overlay.classList.remove('active');
+            }
+        }
+
+        async function saveSupabaseSettings() {
+            const url = document.getElementById('setting-supabase-url').value.trim();
+            const key = document.getElementById('setting-supabase-key').value.trim();
+
+            window.db.saveConfig(url, key);
+            toggleSettingsModal(false);
+
+            if (url && key) {
+                Swal.fire({
+                    title: 'เชื่อมต่อแล้ว',
+                    text: 'ระบบเริ่มซิงค์ฐานข้อมูล Supabase แล้ว หากการเชื่อมต่อถูกต้อง ระบบจะใช้ข้อมูลคลาวด์',
+                    icon: 'success',
+                    timer: 2000
+                }).then(() => {
+                    // Reload current workspace view to reflect cloud data
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    title: 'รีเซ็ตข้อมูลแล้ว',
+                    text: 'รีเซ็ตกลับมาใช้งาน Local Mock Storage (ออฟไลน์) สำเร็จ',
+                    icon: 'info',
+                    timer: 2000
+                }).then(() => {
+                    window.location.reload();
+                });
+            }
+        }
+        
+        window.toggleSettingsModal = toggleSettingsModal;
+        window.saveSupabaseSettings = saveSupabaseSettings;
+    </script>
+</body>
+</html>
