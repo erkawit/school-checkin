@@ -574,6 +574,7 @@ class Database {
 
     async addUser(username, password, role, firstName, lastName, nickname, className) {
         const id = 'usr_' + Math.random().toString(36).substr(2, 9);
+        const resolvedClassName = className || null;
         if (this.isSupabaseActive()) {
             try {
                 const { data, error } = await this.supabase
@@ -586,13 +587,14 @@ class Database {
                         first_name: firstName,
                         last_name: lastName,
                         nickname,
-                        class_name: className
+                        class_name: resolvedClassName
                     }])
                     .select();
                 if (error) throw error;
                 return data[0];
             } catch (err) {
                 console.error('Supabase addUser error, falling back to local:', err);
+                throw err;
             }
         }
 
@@ -600,13 +602,14 @@ class Database {
         if (users.some(u => u.username === username)) {
             throw new Error('ชื่อผู้ใช้งานนี้มีอยู่ในระบบแล้ว');
         }
-        const newUser = { id, username, password, role, first_name: firstName, last_name: lastName, nickname, class_name: className };
+        const newUser = { id, username, password, role, first_name: firstName, last_name: lastName, nickname, class_name: resolvedClassName };
         users.push(newUser);
         localStorage.setItem('db_users', JSON.stringify(users));
         return newUser;
     }
 
     async editUser(id, username, password, role, firstName, lastName, nickname, className) {
+        const resolvedClassName = className || null;
         if (this.isSupabaseActive()) {
             try {
                 const { data, error } = await this.supabase
@@ -618,7 +621,7 @@ class Database {
                         first_name: firstName,
                         last_name: lastName,
                         nickname,
-                        class_name: className
+                        class_name: resolvedClassName
                     })
                     .eq('id', id)
                     .select();
@@ -626,6 +629,7 @@ class Database {
                 return data[0];
             } catch (err) {
                 console.error('Supabase editUser error, falling back to local:', err);
+                throw err;
             }
         }
 
@@ -641,7 +645,7 @@ class Database {
             users[idx].first_name = firstName;
             users[idx].last_name = lastName;
             users[idx].nickname = nickname;
-            users[idx].class_name = className;
+            users[idx].class_name = resolvedClassName;
             localStorage.setItem('db_users', JSON.stringify(users));
             return users[idx];
         }
@@ -656,6 +660,7 @@ class Database {
                 return true;
             } catch (err) {
                 console.error('Supabase deleteUser error, falling back to local:', err);
+                throw err;
             }
         }
 
