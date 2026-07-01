@@ -208,6 +208,89 @@ class Database {
         return true;
     }
 
+    async editClass(oldName, newName, level) {
+        if (this.isSupabaseActive()) {
+            try {
+                if (oldName === newName) {
+                    const { data, error } = await this.supabase
+                        .from('classes')
+                        .update({ level })
+                        .eq('name', oldName)
+                        .select();
+                    if (error) throw error;
+                    return data[0];
+                } else {
+                    // 1. Create the new class
+                    const { data: newCls, error: createError } = await this.supabase
+                        .from('classes')
+                        .insert([{ name: newName, level }])
+                        .select();
+                    if (createError) throw createError;
+
+                    // 2. Update students
+                    const { error: studentError } = await this.supabase
+                        .from('students')
+                        .update({ class_name: newName })
+                        .eq('class_name', oldName);
+                    if (studentError) {
+                        // Rollback new class if student update fails
+                        await this.supabase.from('classes').delete().eq('name', newName);
+                        throw studentError;
+                    }
+
+                    // 3. Update attendance logs
+                    await this.supabase
+                        .from('attendance_logs')
+                        .update({ class_name: newName })
+                        .eq('class_name', oldName);
+
+                    // 4. Delete old class
+                    await this.supabase
+                        .from('classes')
+                        .delete()
+                        .eq('name', oldName);
+
+                    return newCls[0];
+                }
+            } catch (err) {
+                console.error('Supabase editClass error, falling back to local:', err);
+            }
+        }
+
+        // Mock fallback
+        let classes = JSON.parse(localStorage.getItem('db_classes')) || [];
+        const idx = classes.findIndex(c => c.name === oldName);
+        if (idx !== -1) {
+            if (oldName !== newName && classes.some(c => c.name === newName)) {
+                throw new Error('มีห้องเรียนชื่อนี้อยู่แล้วในระบบ');
+            }
+            classes[idx].name = newName;
+            classes[idx].level = level;
+            localStorage.setItem('db_classes', JSON.stringify(classes));
+
+            // Update students local fallback
+            let students = JSON.parse(localStorage.getItem('db_students')) || [];
+            students.forEach(s => {
+                if (s.class_name === oldName) {
+                    s.class_name = newName;
+                }
+            });
+            localStorage.setItem('db_students', JSON.stringify(students));
+
+            // Update attendance logs local fallback
+            let logs = JSON.parse(localStorage.getItem('db_attendance_logs')) || [];
+            logs.forEach(l => {
+                if (l.class_name === oldName) {
+                    l.class_name = newName;
+                }
+            });
+            localStorage.setItem('db_attendance_logs', JSON.stringify(logs));
+
+            return { name: newName, level };
+        }
+        throw new Error('ไม่พบข้อมูลห้องเรียน');
+    }
+
     // --- Students Operations ---
     async getStudents(className) {
         if (this.isSupabaseActive()) {

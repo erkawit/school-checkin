@@ -475,7 +475,10 @@ async function loadAdminClasses() {
                     <td class="font-bold text-slate-800 text-lg">${cls.name}</td>
                     <td><span class="level-badge">${cls.level}</span></td>
                     <td>
-                        <button onclick="deleteClassPrompt('${cls.name}')" class="text-red-400 hover:text-red-300 font-semibold text-xs bg-red-500/10 px-2 py-1 rounded border border-red-500/20">ลบห้องเรียน</button>
+                        <div class="flex gap-2">
+                            <button onclick="editClassPrompt('${cls.name.replace(/'/g, "\\'")}', '${cls.level}')" class="text-indigo-400 hover:text-indigo-300 font-semibold text-xs bg-indigo-500/10 px-2 py-1 rounded border border-indigo-500/20">แก้ไข</button>
+                            <button onclick="deleteClassPrompt('${cls.name.replace(/'/g, "\\'")}')" class="text-red-400 hover:text-red-300 font-semibold text-xs bg-red-500/10 px-2 py-1 rounded border border-red-500/20">ลบห้องเรียน</button>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -557,6 +560,54 @@ function deleteClassPrompt(name) {
             }
         }
     });
+}
+
+async function editClassPrompt(oldName, currentLevel) {
+    const { value: formValues } = await Swal.fire({
+        title: 'แก้ไขข้อมูลห้องเรียน',
+        html: `
+            <div class="text-left mb-3">
+                <label class="input-label">ชื่อห้องเรียน</label>
+                <input id="edit-class-name" class="input-field" value="${oldName}" placeholder="เช่น ม.1/2">
+            </div>
+            <div class="text-left">
+                <label class="input-label">ระดับการศึกษา</label>
+                <select id="edit-class-level" class="input-field">
+                    <option value="อนุบาล" ${currentLevel === 'อนุบาล' ? 'selected' : ''}>อนุบาล</option>
+                    <option value="ประถม" ${currentLevel === 'ประถม' ? 'selected' : ''}>ประถม</option>
+                    <option value="มัธยม" ${currentLevel === 'มัธยม' ? 'selected' : ''}>มัธยม</option>
+                </select>
+            </div>
+        `,
+        confirmButtonText: 'บันทึกการแก้ไข',
+        cancelButtonText: 'ยกเลิก',
+        showCancelButton: true,
+        preConfirm: () => {
+            const name = document.getElementById('edit-class-name').value.trim();
+            const level = document.getElementById('edit-class-level').value;
+            if (!name) {
+                Swal.showValidationMessage('กรุณากรอกชื่อห้องเรียน');
+                return false;
+            }
+            return { name, level };
+        }
+    });
+
+    if (formValues) {
+        try {
+            Swal.fire({
+                title: 'กำลังบันทึกข้อมูล...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            await window.db.editClass(oldName, formValues.name, formValues.level);
+            Swal.fire('แก้ไขสำเร็จ!', `แก้ไขข้อมูลห้องเรียนเรียบร้อยแล้ว`, 'success');
+            loadAdminClasses();
+        } catch (err) {
+            Swal.fire('เกิดข้อผิดพลาด', err.message || 'ไม่สามารถบันทึกข้อมูลได้', 'error');
+        }
+    }
 }
 
 // --- TAB 4: HISTORICAL REPORTS & CSV EXPORT ---
@@ -1398,6 +1449,7 @@ window.addStudentPrompt = addStudentPrompt;
 window.editStudentPrompt = editStudentPrompt;
 window.deleteStudentPrompt = deleteStudentPrompt;
 window.addClassPrompt = addClassPrompt;
+window.editClassPrompt = editClassPrompt;
 window.deleteClassPrompt = deleteClassPrompt;
 window.exportToCSV = exportToCSV;
 window.handleExcelUpload = handleExcelUpload;
