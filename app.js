@@ -172,7 +172,7 @@ function updateHeaderUserPanel() {
 
     if (isAdmin) {
         content = `
-            <span class="text-xs md:text-sm text-pink-400 font-semibold mr-1">ผู้ดูแลระบบ (Admin)</span>
+            <span class="text-xs md:text-sm text-indigo-400 font-semibold mr-1">ผู้ดูแลระบบ (Admin)</span>
             <button onclick="exitAdmin()" class="btn-danger py-1.5 px-3 text-xs" style="border-radius: 8px;">ออกจากระบบ</button>
             <button onclick="toggleSettingsModal(true)" class="btn-secondary py-1.5 px-2.5 text-xs" style="border-radius: 8px;" title="ตั้งค่าฐานข้อมูล">⚙️</button>
         `;
@@ -237,8 +237,8 @@ async function loadClasses(level) {
     });
 
     classList.innerHTML = `
-        <div class="col-span-full text-center py-8 text-slate-600">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500 mb-2"></div>
+        <div class="col-span-full text-center py-8 text-slate-400">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mb-2"></div>
             <div>กำลังโหลดข้อมูลห้องเรียน...</div>
         </div>
     `;
@@ -270,9 +270,9 @@ async function loadClasses(level) {
             card.onclick = () => selectClass(cls.name);
             
             card.innerHTML = `
-                <div class="text-2xl font-bold text-slate-800">${cls.name}</div>
-                <div class="text-xs text-pink-600 font-semibold">${cls.level}</div>
-                <div class="text-sm text-slate-600 mt-2">${students.length} นักเรียน</div>
+                <div class="text-2xl font-bold text-slate-100">${cls.name}</div>
+                <div class="text-xs text-indigo-400 font-semibold">${cls.level}</div>
+                <div class="text-sm text-slate-400 mt-2">${students.length} นักเรียน</div>
             `;
             classList.appendChild(card);
         }
@@ -388,7 +388,7 @@ function renderStudentUI() {
             const cache = attendanceCache[std.id] || { status: 'ยังไม่ได้เช็ค', note: '' };
             const badgeClass = getStatusBadgeClass(cache.status);
             const statusLabel = getStatusLabel(cache.status);
-            const displayNote = cache.note ? `<div class="text-xs text-pink-600 mt-1">หมายเหตุ: ${cache.note}</div>` : '';
+            const displayNote = cache.note ? `<div class="text-xs text-indigo-400 mt-1">หมายเหตุ: ${cache.note}</div>` : '';
             
             const card = document.createElement('div');
             card.className = 'student-mobile-card';
@@ -396,8 +396,8 @@ function renderStudentUI() {
             
             card.innerHTML = `
                 <div class="text-left">
-                    <span class="text-slate-500 text-xs font-semibold mr-1">#${idx + 1}</span>
-                    <span class="font-medium text-slate-800">${std.full_name}</span>
+                    <span class="text-slate-400 text-xs font-semibold mr-1">#${idx + 1}</span>
+                    <span class="font-medium text-slate-200">${std.full_name}</span>
                     ${displayNote}
                 </div>
                 <div>
@@ -426,12 +426,12 @@ function renderStudentUI() {
             const cache = attendanceCache[std.id] || { status: 'ยังไม่ได้เช็ค', note: '' };
             const badgeClass = getStatusBadgeClass(cache.status);
             const statusLabel = getStatusLabel(cache.status);
-            const noteText = cache.note ? `<span class="text-xs bg-stone-100 text-stone-700 px-2 py-1 rounded ml-2 border border-stone-200">📝 ${cache.note}</span>` : '';
+            const noteText = cache.note ? `<span class="text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded ml-2 border border-slate-700">📝 ${cache.note}</span>` : '';
             
             tableHTML += `
                 <tr class="student-row" data-id="${std.id}">
-                    <td class="text-slate-500 font-semibold">${idx + 1}</td>
-                    <td class="font-medium text-slate-800">${std.full_name}</td>
+                    <td class="text-slate-400 font-semibold">${idx + 1}</td>
+                    <td class="font-medium text-slate-200">${std.full_name}</td>
                     <td>
                         <span class="badge-status ${badgeClass}" id="status-badge-${std.id}">${statusLabel}</span>
                         <div id="status-note-${std.id}" class="inline-block">${noteText}</div>
@@ -481,7 +481,7 @@ function setStudentStatus(studentId, status, note = '') {
     }
     
     if (noteEl) {
-        noteEl.innerHTML = note ? `<span class="text-xs bg-stone-100 text-stone-700 px-2 py-1 rounded ml-2 border border-stone-200">📝 ${note}</span>` : '';
+        noteEl.innerHTML = note ? `<span class="text-xs bg-slate-800 text-slate-300 px-2 py-1 rounded ml-2 border border-slate-700">📝 ${note}</span>` : '';
     }
 
     // Update active highlight classes for buttons in the row

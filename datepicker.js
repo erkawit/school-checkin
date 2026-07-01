@@ -93,12 +93,12 @@ class ThaiDatePicker {
 
         const prevBtn = document.createElement('button');
         prevBtn.type = 'button';
-        prevBtn.className = 'text-pink-600 font-bold hover:bg-pink-50 h-8 w-8 rounded-full flex items-center justify-center transition';
+        prevBtn.className = 'text-indigo-400 font-bold hover:bg-indigo-500/20 h-8 w-8 rounded-full flex items-center justify-center transition';
         prevBtn.innerText = '‹';
         prevBtn.onclick = () => this.changeMonth(-1);
 
         const title = document.createElement('span');
-        title.className = 'font-bold text-slate-800 text-sm';
+        title.className = 'font-bold text-slate-100 text-sm';
         title.innerText = `${this.monthsFull[this.displayMonth]} ${this.displayYear + 543}`;
 
         const nextBtn = document.createElement('button');

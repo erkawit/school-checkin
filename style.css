@@ -1,20 +1,34 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap');
+/* ============================================================
+   School Check-in — Premium Dark Mode Stylesheet
+   Theme: Deep Indigo/Slate with Vivid Accent Gradients
+   Style: Glassmorphism • Micro-animations • SaaS Dashboard
+   ============================================================ */
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap');
+
+/* ──────────────────────────────────────────────────────────────
+   1. CSS Custom Properties (Design Tokens)
+   ────────────────────────────────────────────────────────────── */
 :root {
-    --bg-main: #fbf9f5; /* Premium soft creamy background */
-    --bg-card: rgba(255, 255, 255, 0.85); /* Slightly glossy pure white glass */
-    --border-glass: rgba(236, 72, 153, 0.1); /* Thin delicate pink border */
-    --text-primary: #1c1917; /* Dark charcoal text for rich contrast */
-    --text-secondary: #57534e; /* Warm slate secondary text */
-    --text-muted: #a8a29e; /* Muted stone grey */
-    
-    /* Brand & Accent Colors (Pink, Warm Grey, White) */
-    --color-primary: #ec4899; /* Vibrant Pink */
-    --color-primary-hover: #db2777; /* Deep Pink hover */
-    --color-secondary: #f5f5f4; /* Light warm-grey button background */
-    --color-accent: #ffffff; /* White */
-    
-    /* Attendance status gradients & solid colors */
+    /* Backgrounds */
+    --bg-main: #0f0f1a;
+    --bg-card: rgba(30, 30, 50, 0.7);
+    --bg-card-solid: #1a1a2e;
+    --border-glass: rgba(99, 102, 241, 0.15);
+
+    /* Typography */
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+
+    /* Brand & Accent */
+    --color-primary: #6366f1;
+    --color-primary-hover: #4f46e5;
+    --color-primary-glow: rgba(99, 102, 241, 0.3);
+    --color-secondary-bg: rgba(255, 255, 255, 0.05);
+    --color-accent: #8b5cf6;
+
+    /* Status palette (gradient pairs) */
     --status-present-from: #10b981;
     --status-present-to: #059669;
     --status-absent-from: #f43f5e;
@@ -25,20 +39,49 @@
     --status-late-to: #ca8a04;
     --status-other-from: #a855f7;
     --status-other-to: #7c3aed;
-    --status-unchecked: #e4e4e7;
+    --status-unchecked: rgba(255, 255, 255, 0.1);
 }
 
+/* ──────────────────────────────────────────────────────────────
+   2. Keyframe Animations
+   ────────────────────────────────────────────────────────────── */
+@keyframes float {
+    0%   { transform: translate(0, 0) scale(1); }
+    50%  { transform: translate(40px, -30px) scale(1.08); }
+    100% { transform: translate(80px, 50px) scale(1.15); }
+}
+
+@keyframes shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position: 200% center; }
+}
+
+@keyframes pulse-glow {
+    0%, 100% { opacity: 0.6; }
+    50%      { opacity: 1; }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   3. Global Reset & Body
+   ────────────────────────────────────────────────────────────── */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+html, body {
+    max-width: 100vw;
+    overflow-x: hidden !important;
+}
+
 body {
     background-color: var(--bg-main);
-    background-image: radial-gradient(circle at 18% 18%, #faf6f0 0%, #FAF7F0 100%);
+    background-image:
+        radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99, 102, 241, 0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 50% at 80% 100%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
     color: var(--text-primary);
-    font-family: 'Outfit', 'Sarabun', sans-serif;
+    font-family: 'Inter', 'Sarabun', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
     position: relative;
@@ -47,36 +90,53 @@ body {
     align-items: center;
     justify-content: flex-start;
     padding: 2rem 1rem;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* Ambient glow blobs in the background (Subtle watercolors) */
+/* Subtle dot-grid pattern overlay */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle, rgba(99, 102, 241, 0.06) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 80%);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   4. Ambient Background Blobs
+   ────────────────────────────────────────────────────────────── */
 .blob {
     position: absolute;
     width: 600px;
     height: 600px;
     border-radius: 50%;
     filter: blur(150px);
-    opacity: 0.35;
+    opacity: 0.25;
     z-index: -1;
     pointer-events: none;
     animation: float 25s infinite alternate ease-in-out;
 }
 
 .blob-1 {
-    background: #fbcfe8; /* Soft pastel pink */
+    background: rgba(99, 102, 241, 0.5);  /* Indigo glow */
     top: -200px;
     left: -150px;
 }
 
 .blob-2 {
-    background: #fef9c3; /* Creamy light yellow */
+    background: rgba(139, 92, 246, 0.4);  /* Violet glow */
     bottom: -200px;
     right: -150px;
     animation-delay: -6s;
 }
 
 .blob-3 {
-    background: #e9d5ff; /* Lavender */
+    background: rgba(34, 211, 238, 0.3);  /* Cyan glow */
     top: 50%;
     left: 40%;
     width: 450px;
@@ -84,53 +144,57 @@ body {
     animation-delay: -12s;
 }
 
-@keyframes float {
-    0% { transform: translate(0, 0) scale(1); }
-    100% { transform: translate(80px, 50px) scale(1.15); }
-}
-
-/* Glassmorphism Containers (Premium white glass card with inner glow) */
+/* ──────────────────────────────────────────────────────────────
+   5. Glassmorphism Panels
+   ────────────────────────────────────────────────────────────── */
 .glass-panel {
     background: var(--bg-card);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
     border: 1px solid var(--border-glass);
     border-radius: 24px;
-    box-shadow: 
-        0 4px 6px -1px rgba(142, 105, 120, 0.02),
-        0 10px 30px -3px rgba(142, 105, 120, 0.06),
-        0 20px 40px -5px rgba(142, 105, 120, 0.04),
-        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.3),
+        0 10px 30px -3px rgba(0, 0, 0, 0.25),
+        0 20px 40px -5px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .glass-panel:hover {
-    box-shadow: 
-        0 10px 15px -3px rgba(236, 72, 153, 0.04),
-        0 20px 45px -5px rgba(236, 72, 153, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    box-shadow:
+        0 10px 15px -3px rgba(99, 102, 241, 0.08),
+        0 20px 45px -5px rgba(99, 102, 241, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-/* Auth Screens & Forms */
+/* ──────────────────────────────────────────────────────────────
+   6. Input Fields
+   ────────────────────────────────────────────────────────────── */
 .input-field {
     width: 100%;
-    background: #ffffff;
-    border: 1px solid #e7e5e0;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(99, 102, 241, 0.15);
     border-radius: 12px;
     padding: 0.8rem 1.1rem;
     color: var(--text-primary);
     font-size: 0.95rem;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+    font-family: inherit;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.input-field::placeholder {
+    color: var(--text-muted);
 }
 
 .input-field:focus {
     outline: none;
     border-color: var(--color-primary);
-    box-shadow: 
-        0 0 0 3px rgba(236, 72, 153, 0.12),
-        inset 0 1px 1px rgba(0, 0, 0, 0.02);
-    background: #ffffff;
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow:
+        0 0 0 3px var(--color-primary-glow),
+        inset 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .input-label {
@@ -142,13 +206,15 @@ body {
     letter-spacing: 0.01em;
 }
 
-/* Level Navigation (iOS segmented style) */
+/* ──────────────────────────────────────────────────────────────
+   7. Level Navigation (Segmented Control)
+   ────────────────────────────────────────────────────────────── */
 .level-nav-container {
-    background: #f1f0ec;
+    background: rgba(255, 255, 255, 0.04);
     border-radius: 30px;
     padding: 6px;
     display: inline-flex;
-    border: 1px solid #e7e5e0;
+    border: 1px solid rgba(99, 102, 241, 0.12);
     width: 100%;
     max-width: 480px;
     gap: 4px;
@@ -161,27 +227,34 @@ body {
     padding: 10px 16px;
     font-size: 0.9rem;
     font-weight: 600;
-    color: #57534e;
+    font-family: inherit;
+    color: var(--text-secondary);
     cursor: pointer;
     border-radius: 25px;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .level-tab:hover {
-    color: var(--color-primary);
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.04);
 }
 
 .level-tab.active {
-    background: #ffffff;
-    color: var(--color-primary);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04), 0 2px 4px rgba(0, 0, 0, 0.02);
+    background: var(--color-primary);
+    color: #ffffff;
+    box-shadow:
+        0 4px 14px var(--color-primary-glow),
+        0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Premium Buttons */
+/* ──────────────────────────────────────────────────────────────
+   8. Buttons
+   ────────────────────────────────────────────────────────────── */
 .btn-primary {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
     color: white;
     font-weight: 600;
+    font-family: inherit;
     padding: 0.8rem 1.75rem;
     border: none;
     border-radius: 12px;
@@ -191,13 +264,13 @@ body {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    box-shadow: 0 4px 14px rgba(236, 72, 153, 0.25);
+    box-shadow: 0 4px 14px var(--color-primary-glow);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(236, 72, 153, 0.45);
-    filter: brightness(1.05);
+    box-shadow: 0 8px 25px rgba(99, 102, 241, 0.45);
+    filter: brightness(1.08);
 }
 
 .btn-primary:active {
@@ -205,10 +278,11 @@ body {
 }
 
 .btn-secondary {
-    background: #ffffff;
-    border: 1px solid #e7e5e0;
-    color: #27272a;
+    background: var(--color-secondary-bg);
+    border: 1px solid rgba(99, 102, 241, 0.15);
+    color: var(--text-primary);
     font-weight: 600;
+    font-family: inherit;
     padding: 0.8rem 1.5rem;
     border-radius: 12px;
     cursor: pointer;
@@ -217,19 +291,20 @@ body {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.01);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .btn-secondary:hover {
-    background: #fafaf9;
+    background: rgba(255, 255, 255, 0.08);
     transform: translateY(-2px);
-    border-color: #d6d3d1;
+    border-color: rgba(99, 102, 241, 0.3);
 }
 
 .btn-danger {
-    background: linear-gradient(135deg, #f43f5e, #e11d48);
+    background: linear-gradient(135deg, var(--status-absent-from), var(--status-absent-to));
     color: white;
     font-weight: 600;
+    font-family: inherit;
     padding: 0.8rem 1.5rem;
     border: none;
     border-radius: 12px;
@@ -239,18 +314,23 @@ body {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    box-shadow: 0 4px 14px rgba(244, 63, 94, 0.2);
+    box-shadow: 0 4px 14px rgba(244, 63, 94, 0.25);
 }
 
 .btn-danger:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(244, 63, 94, 0.35);
+    box-shadow: 0 8px 25px rgba(244, 63, 94, 0.4);
+    filter: brightness(1.08);
 }
 
-/* Class Card Grid Widget */
+/* ──────────────────────────────────────────────────────────────
+   9. Class Cards
+   ────────────────────────────────────────────────────────────── */
 .class-card {
-    background: #ffffff;
-    border: 1px solid #e7e5e0;
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-glass);
     border-radius: 16px;
     padding: 1.5rem;
     text-align: center;
@@ -262,7 +342,7 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01), 0 2px 4px -1px rgba(0, 0, 0, 0.01);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .class-card::before {
@@ -272,17 +352,32 @@ body {
     left: 0;
     width: 100%;
     height: 4px;
-    background: linear-gradient(90deg, var(--color-primary), #ffffff);
-    opacity: 0.8;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-accent), rgba(34, 211, 238, 0.6));
+    opacity: 0.85;
 }
 
 .class-card:hover {
     transform: translateY(-6px);
-    border-color: var(--color-primary);
-    box-shadow: 0 20px 25px -5px rgba(236, 72, 153, 0.1), 0 8px 10px -6px rgba(236, 72, 153, 0.05);
+    border-color: rgba(99, 102, 241, 0.35);
+    box-shadow:
+        0 20px 40px -8px rgba(0, 0, 0, 0.35),
+        0 0 30px -5px var(--color-primary-glow);
 }
 
-/* Status Badges */
+/* ──────────────────────────────────────────────────────────────
+   10. Status Badges & Level Badges
+   ────────────────────────────────────────────────────────────── */
+.level-badge {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: rgba(99, 102, 241, 0.12);
+    color: #a5b4fc;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
 .badge-status {
     padding: 0.35rem 0.85rem;
     border-radius: 30px;
@@ -293,85 +388,127 @@ body {
     letter-spacing: 0.01em;
 }
 
-.badge-present { background: #e6f9f0; color: #047857; border: 1px solid #a3e635/0; }
-.badge-absent { background: #ffebee; color: #c62828; border: 1px solid #a3e635/0; }
-.badge-sick { background: #fff3e0; color: #e65100; border: 1px solid #a3e635/0; }
-.badge-late { background: #fffde7; color: #f57f17; border: 1px solid #a3e635/0; }
-.badge-other { background: #f3e5f5; color: #4a148c; border: 1px solid #a3e635/0; }
-.badge-unchecked { background: #f4f4f5; color: #71717a; border: 1px solid #e4e4e7; }
+.badge-present {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
 
-/* Desktop Status Buttons (Pills Outline to Filled Transition) */
+.badge-absent {
+    background: rgba(244, 63, 94, 0.15);
+    color: #fb7185;
+    border: 1px solid rgba(244, 63, 94, 0.25);
+}
+
+.badge-sick {
+    background: rgba(249, 115, 22, 0.15);
+    color: #fb923c;
+    border: 1px solid rgba(249, 115, 22, 0.25);
+}
+
+.badge-late {
+    background: rgba(234, 179, 8, 0.15);
+    color: #facc15;
+    border: 1px solid rgba(234, 179, 8, 0.25);
+}
+
+.badge-other {
+    background: rgba(168, 85, 247, 0.15);
+    color: #c084fc;
+    border: 1px solid rgba(168, 85, 247, 0.25);
+}
+
+.badge-unchecked {
+    background: var(--status-unchecked);
+    color: var(--text-muted);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   11. Status Buttons (Outline → Filled Transition)
+   ────────────────────────────────────────────────────────────── */
 .status-btn {
-    border: 1px solid #e7e5e0;
-    background: #ffffff;
-    color: #57534e;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-secondary);
     padding: 0.45rem 0.9rem;
-    border-radius: 20px; /* Pill style */
+    border-radius: 20px;
     font-size: 0.825rem;
     font-weight: 600;
+    font-family: inherit;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .status-btn:hover {
-    border-color: #a8a29e;
-    color: #1c1917;
-    background: #fafaf9;
+    border-color: rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.06);
 }
 
-/* Active Pill Highlight States */
-.status-btn.active-present { 
-    background: #10b981 !important; 
-    border-color: #10b981 !important; 
-    color: #ffffff !important; 
-    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.25); 
-}
-.status-btn.active-absent { 
-    background: #f43f5e !important; 
-    border-color: #f43f5e !important; 
-    color: #ffffff !important; 
-    box-shadow: 0 4px 10px rgba(244, 63, 94, 0.25); 
-}
-.status-btn.active-sick { 
-    background: #f97316 !important; 
-    border-color: #f97316 !important; 
-    color: #ffffff !important; 
-    box-shadow: 0 4px 10px rgba(249, 115, 22, 0.25); 
-}
-.status-btn.active-late { 
-    background: #eab308 !important; 
-    border-color: #eab308 !important; 
-    color: #451a03 !important; 
-    box-shadow: 0 4px 10px rgba(234, 179, 8, 0.25); 
-}
-.status-btn.active-other { 
-    background: #a855f7 !important; 
-    border-color: #a855f7 !important; 
-    color: #ffffff !important; 
-    box-shadow: 0 4px 10px rgba(168, 85, 247, 0.25); 
+/* Active status pill highlights */
+.status-btn.active-present {
+    background: var(--status-present-from) !important;
+    border-color: var(--status-present-from) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
 }
 
-/* Small screen student cards */
+.status-btn.active-absent {
+    background: var(--status-absent-from) !important;
+    border-color: var(--status-absent-from) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(244, 63, 94, 0.35);
+}
+
+.status-btn.active-sick {
+    background: var(--status-sick-from) !important;
+    border-color: var(--status-sick-from) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
+}
+
+.status-btn.active-late {
+    background: var(--status-late-from) !important;
+    border-color: var(--status-late-from) !important;
+    color: #1a1a2e !important;
+    box-shadow: 0 4px 14px rgba(234, 179, 8, 0.35);
+}
+
+.status-btn.active-other {
+    background: var(--status-other-from) !important;
+    border-color: var(--status-other-from) !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   12. Student Mobile Cards
+   ────────────────────────────────────────────────────────────── */
 .student-mobile-card {
-    background: #ffffff;
-    border: 1px solid #e7e5e0;
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
     border-radius: 16px;
     padding: 1.15rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.01);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .student-mobile-card:hover {
-    background: rgba(236, 72, 153, 0.02);
-    border-color: rgba(236, 72, 153, 0.2);
+    background: rgba(99, 102, 241, 0.06);
+    border-color: rgba(99, 102, 241, 0.25);
     transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.02);
+    box-shadow:
+        0 10px 20px -3px rgba(0, 0, 0, 0.2),
+        0 0 15px -3px var(--color-primary-glow);
 }
 
-/* DataTables Light overrides */
+/* ──────────────────────────────────────────────────────────────
+   13. DataTables — Full Dark Theme
+   ────────────────────────────────────────────────────────────── */
 .dataTables_wrapper {
     color: var(--text-primary) !important;
 }
@@ -385,10 +522,10 @@ table.dataTable {
 }
 
 table.dataTable thead th {
-    background-color: #f5f4f0 !important; /* Creamy grey headers */
-    color: #57534e !important;
+    background-color: rgba(99, 102, 241, 0.08) !important;
+    color: var(--text-secondary) !important;
     font-weight: 700 !important;
-    border-bottom: 2px solid rgba(236, 72, 153, 0.15) !important;
+    border-bottom: 2px solid rgba(99, 102, 241, 0.2) !important;
     padding: 1.15rem 1rem !important;
     text-transform: uppercase;
     font-size: 0.8rem;
@@ -401,38 +538,48 @@ table.dataTable tbody tr {
 }
 
 table.dataTable tbody tr:hover {
-    background-color: rgba(236, 72, 153, 0.02) !important;
+    background-color: rgba(99, 102, 241, 0.05) !important;
 }
 
 table.dataTable tbody td {
-    border-bottom: 1px solid #e7e5e0 !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
     padding: 1.15rem 1rem !important;
     color: var(--text-primary) !important;
     vertical-align: middle;
 }
 
-.dataTables_filter input, .dataTables_length select {
-    background: #ffffff !important;
-    border: 1px solid #e7e5e0 !important;
+.dataTables_filter input,
+.dataTables_length select {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(99, 102, 241, 0.15) !important;
     color: var(--text-primary) !important;
     border-radius: 10px !important;
     padding: 0.5rem 0.9rem !important;
+    font-family: inherit;
 }
 
-.dataTables_filter input:focus, .dataTables_length select:focus {
+.dataTables_filter input:focus,
+.dataTables_length select:focus {
     outline: none;
-    border-color: var(--color-primary);
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 3px var(--color-primary-glow);
 }
 
-.dataTables_info, .dataTables_paginate {
+.dataTables_filter label,
+.dataTables_length label {
+    color: var(--text-secondary) !important;
+}
+
+.dataTables_info,
+.dataTables_paginate {
     color: var(--text-secondary) !important;
     margin-top: 1rem;
 }
 
 .dataTables_paginate .paginate_button {
-    background: #ffffff !important;
-    border: 1px solid #e7e5e0 !important;
-    color: #27272a !important;
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(99, 102, 241, 0.12) !important;
+    color: var(--text-secondary) !important;
     border-radius: 10px !important;
     margin: 0 3px;
     padding: 0.5rem 0.9rem !important;
@@ -445,43 +592,70 @@ table.dataTable tbody td {
     border-color: var(--color-primary) !important;
 }
 
-.dataTables_paginate .paginate_button.current, .dataTables_paginate .paginate_button.current:hover {
+.dataTables_paginate .paginate_button.current,
+.dataTables_paginate .paginate_button.current:hover {
     background: var(--color-primary) !important;
     color: white !important;
     border-color: var(--color-primary) !important;
+    box-shadow: 0 2px 8px var(--color-primary-glow);
 }
 
-/* Scrollbar Customization */
+.dataTables_paginate .paginate_button.disabled,
+.dataTables_paginate .paginate_button.disabled:hover {
+    color: var(--text-muted) !important;
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   14. Scrollbar
+   ────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-    background: var(--bg-main);
+    background: rgba(15, 15, 26, 0.5);
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #e7e5e0;
-    border-radius: 4px;
+    background: rgba(99, 102, 241, 0.3);
+    border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--color-primary);
 }
 
-/* Settings Modal */
+/* Firefox scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(99, 102, 241, 0.3) rgba(15, 15, 26, 0.5);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   15. Settings Modal
+   ────────────────────────────────────────────────────────────── */
 .settings-modal {
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) scale(0.9);
+    transform: translate(-50%, -50%) scale(0.92);
     z-index: 100;
     width: 90%;
     max-width: 500px;
     opacity: 0;
     pointer-events: none;
     transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: var(--bg-card);
+    backdrop-filter: blur(32px) saturate(150%);
+    -webkit-backdrop-filter: blur(32px) saturate(150%);
+    border: 1px solid var(--border-glass);
+    border-radius: 24px;
+    box-shadow:
+        0 24px 80px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(99, 102, 241, 0.1);
 }
 
 .settings-modal.active {
@@ -496,7 +670,7 @@ table.dataTable tbody td {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(28, 25, 23, 0.35); /* Soft beige overlay */
+    background: rgba(10, 10, 20, 0.6);
     backdrop-filter: blur(8px);
     z-index: 90;
     opacity: 0;
@@ -509,13 +683,15 @@ table.dataTable tbody td {
     pointer-events: all;
 }
 
-/* SweetAlert overrides for light pink theme integration */
+/* ──────────────────────────────────────────────────────────────
+   16. SweetAlert Dark Overrides
+   ────────────────────────────────────────────────────────────── */
 .swal2-popup {
-    background: #ffffff !important;
-    border: 1px solid rgba(236, 72, 153, 0.08) !important;
+    background: var(--bg-card-solid) !important;
+    border: 1px solid var(--border-glass) !important;
     border-radius: 20px !important;
     color: var(--text-primary) !important;
-    box-shadow: 0 20px 50px rgba(142, 105, 120, 0.12) !important;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5) !important;
 }
 
 .swal2-title {
@@ -526,12 +702,19 @@ table.dataTable tbody td {
     color: var(--text-secondary) !important;
 }
 
-.swal2-input, .swal2-textarea {
-    background: #ffffff !important;
-    border: 1px solid rgba(236, 72, 153, 0.25) !important;
+.swal2-input,
+.swal2-textarea {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(99, 102, 241, 0.2) !important;
     color: var(--text-primary) !important;
     border-radius: 10px !important;
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+}
+
+.swal2-input:focus,
+.swal2-textarea:focus {
+    border-color: var(--color-primary) !important;
+    box-shadow: 0 0 0 3px var(--color-primary-glow) !important;
 }
 
 .swal2-radio label {
@@ -540,19 +723,26 @@ table.dataTable tbody td {
 }
 
 .swal2-confirm {
-    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover)) !important;
-    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2) !important;
+    background: linear-gradient(135deg, var(--color-primary), var(--color-accent)) !important;
+    box-shadow: 0 4px 14px var(--color-primary-glow) !important;
     border-radius: 10px !important;
+    border: none !important;
 }
 
 .swal2-cancel {
-    background: #f4f4f5 !important;
-    border: 1px solid #e4e4e7 !important;
-    color: #27272a !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: var(--text-primary) !important;
     border-radius: 10px !important;
 }
 
-/* Admin Dashboard grid & layout components */
+.swal2-cancel:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   17. Admin Dashboard Grid & Stat Cards
+   ────────────────────────────────────────────────────────────── */
 .admin-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -561,8 +751,10 @@ table.dataTable tbody td {
 }
 
 .stat-card {
-    background: #ffffff;
-    border: 1px solid #e7e5e0;
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-glass);
     border-radius: 20px;
     padding: 1.5rem;
     display: flex;
@@ -570,7 +762,13 @@ table.dataTable tbody td {
     gap: 0.5rem;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.015);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
 .stat-card::before {
@@ -581,11 +779,20 @@ table.dataTable tbody td {
     width: 4px;
     height: 100%;
     background: var(--color-primary);
+    border-radius: 0 4px 4px 0;
 }
 
-.stat-card.present::before { background: var(--status-present-from); }
-.stat-card.absent::before { background: var(--status-absent-from); }
-.stat-card.sick-late::before { background: var(--status-sick-from); }
+.stat-card.present::before {
+    background: linear-gradient(180deg, var(--status-present-from), var(--status-present-to));
+}
+
+.stat-card.absent::before {
+    background: linear-gradient(180deg, var(--status-absent-from), var(--status-absent-to));
+}
+
+.stat-card.sick-late::before {
+    background: linear-gradient(180deg, var(--status-sick-from), var(--status-sick-to));
+}
 
 .stat-num {
     font-size: 2.5rem;
@@ -600,20 +807,22 @@ table.dataTable tbody td {
     color: var(--text-secondary);
 }
 
-/* Tabs UI for admin control */
+/* ──────────────────────────────────────────────────────────────
+   18. Tabs UI
+   ────────────────────────────────────────────────────────────── */
 .tabs-container {
     display: flex;
-    border-bottom: 1px solid #e7e5e0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     margin-bottom: 1.5rem;
     gap: 0.5rem;
     overflow-x: auto;
     white-space: nowrap;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: none;
 }
 
 .tabs-container::-webkit-scrollbar {
-    display: none; /* Chrome, Safari, Opera */
+    display: none;
 }
 
 .tab-btn {
@@ -623,6 +832,7 @@ table.dataTable tbody td {
     border-bottom: 3px solid transparent;
     color: var(--text-secondary);
     font-weight: 600;
+    font-family: inherit;
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.9rem;
@@ -638,72 +848,63 @@ table.dataTable tbody td {
     border-bottom-color: var(--color-primary);
 }
 
+/* ──────────────────────────────────────────────────────────────
+   19. Tab Content
+   ────────────────────────────────────────────────────────────── */
 .tab-content {
     display: none;
 }
 
 .tab-content.active {
     display: block;
+    animation: fadeIn 0.3s ease;
 }
 
-/* Progress bar indicators */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   20. Progress Bar
+   ────────────────────────────────────────────────────────────── */
 .progress-container {
     width: 100%;
     height: 10px;
-    background: #f1f0ec;
+    background: rgba(255, 255, 255, 0.06);
     border-radius: 6px;
     overflow: hidden;
 }
 
 .progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, var(--color-primary), #ffccd5);
+    background: linear-gradient(
+        90deg,
+        var(--color-primary),
+        var(--color-accent),
+        var(--color-primary)
+    );
+    background-size: 200% 100%;
     border-radius: 6px;
     transition: width 0.4s ease-out;
+    animation: shimmer 2.5s ease-in-out infinite;
 }
 
-/* Fullscreen settings for desktop screens (>768px) */
-@media (min-width: 768px) {
-    header {
-        max-width: 96% !important;
-        width: 96% !important;
-    }
-    
-    main {
-        max-width: 96% !important;
-        width: 96% !important;
-    }
-}
-
-@media (max-width: 768px) {
-    body {
-        padding: 1rem 0.5rem;
-    }
-    
-    .glass-panel {
-        border-radius: 16px;
-        padding: 1.25rem !important;
-    }
-    
-    .admin-grid {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-}
-
-/* Custom Thai Buddhist Era Datepicker Styles */
+/* ──────────────────────────────────────────────────────────────
+   21. Thai Buddhist Era Datepicker — Dark Theme
+   ────────────────────────────────────────────────────────────── */
 .thai-datepicker-popup {
     position: absolute;
     top: 100%;
     left: 0;
     margin-top: 8px;
     z-index: 50;
-    background: #ffffff;
-    border: 1px solid rgba(236, 72, 153, 0.15);
+    background: var(--bg-card-solid);
+    border: 1px solid var(--border-glass);
     border-radius: 16px;
     padding: 1rem;
     width: 280px;
-    box-shadow: 0 10px 25px rgba(142, 105, 120, 0.1);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
     display: none;
 }
 
@@ -716,6 +917,22 @@ table.dataTable tbody td {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+.thai-datepicker-header button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(99, 102, 241, 0.12);
+    color: var(--text-secondary);
+    border-radius: 8px;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.thai-datepicker-header button:hover {
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--text-primary);
 }
 
 .thai-datepicker-grid {
@@ -728,7 +945,7 @@ table.dataTable tbody td {
 
 .thai-datepicker-day-header {
     font-weight: 700;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     padding: 4px 0;
 }
 
@@ -742,7 +959,7 @@ table.dataTable tbody td {
 }
 
 .thai-datepicker-day:hover {
-    background: rgba(236, 72, 153, 0.1);
+    background: rgba(99, 102, 241, 0.15);
     color: var(--color-primary);
 }
 
@@ -750,30 +967,43 @@ table.dataTable tbody td {
     background: var(--color-primary) !important;
     color: white !important;
     font-weight: 700;
+    box-shadow: 0 2px 8px var(--color-primary-glow);
 }
 
 .thai-datepicker-day.disabled {
-    color: #d1d5db;
+    color: var(--text-muted);
     pointer-events: none;
-    opacity: 0.4;
+    opacity: 0.3;
 }
 
 .thai-datepicker-day.other-month {
-    color: #9ca3af;
-    opacity: 0.5;
+    color: var(--text-muted);
+    opacity: 0.35;
 }
 
-/* Mobile Viewport Locking & Fluid Styling (Responsive Fixes) */
-html, body {
-    max-width: 100vw;
-    overflow-x: hidden !important;
+/* ──────────────────────────────────────────────────────────────
+   22. Responsive — Desktop ≥768px
+   ────────────────────────────────────────────────────────────── */
+@media (min-width: 768px) {
+    header {
+        max-width: 96% !important;
+        width: 96% !important;
+    }
+
+    main {
+        max-width: 96% !important;
+        width: 96% !important;
+    }
 }
 
+/* ──────────────────────────────────────────────────────────────
+   23. Responsive — Tablet & Mobile ≤768px
+   ────────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
     body {
         padding: 0.75rem 0.5rem;
     }
-    
+
     header {
         flex-direction: column;
         align-items: center;
@@ -783,35 +1013,35 @@ html, body {
         max-width: 100% !important;
         margin-bottom: 1.5rem !important;
     }
-    
+
     header .flex {
         justify-content: center;
     }
-    
+
     #header-user-panel {
         width: 100%;
         justify-content: center;
         flex-wrap: wrap;
         gap: 0.5rem;
     }
-    
+
     main {
         width: 100% !important;
         max-width: 100% !important;
         padding-left: 0.25rem !important;
         padding-right: 0.25rem !important;
     }
-    
+
     .glass-panel {
         border-radius: 20px;
         padding: 1.25rem !important;
     }
-    
+
     .level-nav-container {
         padding: 4px;
         max-width: 100%;
     }
-    
+
     .level-tab {
         padding: 8px 6px;
         font-size: 0.825rem;
@@ -820,50 +1050,71 @@ html, body {
     .class-card {
         padding: 1.25rem 1rem !important;
     }
+
+    .admin-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .tabs-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .tabs-container::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tab-btn {
+        flex-shrink: 0;
+    }
 }
 
+/* ──────────────────────────────────────────────────────────────
+   24. Responsive — Small Phone ≤480px
+   ────────────────────────────────────────────────────────────── */
 @media (max-width: 480px) {
     .glass-panel {
         border-radius: 16px;
         padding: 1rem !important;
     }
-    
+
     .class-card {
         padding: 1rem 0.75rem !important;
     }
-    
+
     .class-card .text-2xl {
         font-size: 1.25rem;
     }
-    
+
     #attendance-filter-container {
         flex-direction: column;
         align-items: stretch;
         gap: 0.75rem;
     }
-    
+
     #attendance-filter-container > div {
         width: 100%;
     }
-    
+
     #attendance-date-btn {
         width: 100% !important;
         justify-content: center;
     }
-    
+
     #attendance-filter-container button {
         width: 100%;
     }
-    
+
     #attendance-submit-container {
         flex-direction: column-reverse;
         align-items: stretch;
         gap: 0.75rem;
     }
-    
+
     #attendance-submit-container button {
         width: 100%;
         margin: 0;
     }
 }
-

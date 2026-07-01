@@ -216,15 +216,15 @@ async function loadAdminStats() {
             const cPercent = classStudents.length > 0 ? Math.round((cChecked / classStudents.length) * 100) : 0;
             
             const li = document.createElement('div');
-            li.className = 'flex justify-between items-center p-3 bg-white border border-stone-200 rounded-lg text-sm';
+            li.className = 'flex justify-between items-center p-3 bg-white/5 border border-white/10 rounded-lg text-sm';
             li.innerHTML = `
                 <div>
-                    <span class="font-bold text-slate-800">${cls.name}</span>
+                    <span class="font-bold text-slate-100">${cls.name}</span>
                     <span class="text-xs text-slate-500 ml-2">(${cls.level})</span>
                 </div>
                 <div class="text-right">
-                    <div class="font-semibold text-slate-800">${cChecked} / ${classStudents.length} คน (${cPercent}%)</div>
-                    <div class="text-xs text-emerald-600 font-semibold">มาเรียน ${cPresent} คน</div>
+                    <div class="font-semibold text-slate-200">${cChecked} / ${classStudents.length} คน (${cPercent}%)</div>
+                    <div class="text-xs text-emerald-400 font-semibold">มา ${cPresent}</div>
                 </div>
             `;
             classOverviewList.appendChild(li);
@@ -265,9 +265,9 @@ async function loadAdminStudents() {
         students.forEach(std => {
             tableHTML += `
                 <tr>
-                    <td class="font-medium text-slate-800">${std.student_code || '-'}</td>
-                    <td class="text-slate-600 font-mono text-xs">${std.national_id || '-'}</td>
-                    <td class="font-medium text-slate-800">${std.full_name}</td>
+                    <td class="font-medium text-slate-200">${std.student_code || '-'}</td>
+                    <td class="text-slate-400 font-mono text-xs">${std.national_id || '-'}</td>
+                    <td class="font-medium text-slate-200">${std.full_name}</td>
                     <td><span class="level-badge">${std.class_name}</span></td>
                     <td>
                         <div class="flex gap-2">
@@ -472,7 +472,7 @@ async function loadAdminClasses() {
         classes.forEach(cls => {
             tableHTML += `
                 <tr>
-                    <td class="font-bold text-slate-800 text-lg">${cls.name}</td>
+                    <td class="font-bold text-slate-100 text-lg">${cls.name}</td>
                     <td><span class="level-badge">${cls.level}</span></td>
                     <td>
                         <div class="flex gap-2">
@@ -712,12 +712,12 @@ async function loadAdminReports() {
 
             tableHTML += `
                 <tr>
-                    <td class="text-slate-600 text-sm font-semibold">${formattedDate}</td>
-                    <td class="font-bold text-slate-700">${log.class_name}</td>
-                    <td class="font-medium text-slate-800">${log.student_name}</td>
+                    <td class="text-slate-400 text-sm font-semibold">${formattedDate}</td>
+                    <td class="font-bold text-slate-200">${log.class_name}</td>
+                    <td class="font-medium text-slate-200">${log.student_name}</td>
                     <td><span class="badge-status ${badgeClass}">${statusLabel}</span></td>
                     <td class="text-slate-500 text-xs italic">${log.note || '-'}</td>
-                    <td class="text-pink-600 text-xs font-semibold">${log.teacher_name}</td>
+                    <td class="text-indigo-400 text-xs font-semibold">${log.teacher_name}</td>
                 </tr>
             `;
         });
@@ -960,8 +960,8 @@ async function loadPromoteStudentsList() {
     }
 
     listContainer.innerHTML = `
-        <div class="col-span-full text-center py-4 text-slate-600">
-            <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-pink-500 mb-2"></div>
+        <div class="col-span-full text-center py-4 text-slate-500">
+            <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-500 mb-2"></div>
             <div>กำลังโหลดรายชื่อนักเรียน...</div>
         </div>
     `;
@@ -976,11 +976,11 @@ async function loadPromoteStudentsList() {
         listContainer.innerHTML = '';
         students.forEach(std => {
             const item = document.createElement('label');
-            item.className = 'flex items-center gap-2.5 p-2.5 border border-stone-200 rounded-lg hover:bg-stone-50 transition cursor-pointer text-sm font-medium';
+            item.className = 'flex items-center gap-2.5 p-2.5 border border-white/10 rounded-lg hover:bg-white/5 transition cursor-pointer text-sm font-medium';
             item.innerHTML = `
-                <input type="checkbox" data-id="${std.id}" class="promote-student-checkbox h-4 w-4 rounded border-stone-300 text-pink-600 focus:ring-pink-500" onchange="handleStudentPromoteCheck(this, '${std.id}')">
+                <input type="checkbox" data-id="${std.id}" class="promote-student-checkbox h-4 w-4 rounded border-slate-600 text-indigo-500 focus:ring-indigo-500 bg-slate-800" onchange="handleStudentPromoteCheck(this, '${std.id}')">
                 <div class="flex flex-col">
-                    <span class="text-slate-800">${std.full_name}</span>
+                    <span class="text-slate-200">${std.full_name}</span>
                     <span class="text-[10px] text-slate-400 font-mono">${std.student_code || 'ไม่มีรหัส'}</span>
                 </div>
             `;
@@ -1131,21 +1131,21 @@ async function loadAdminUsers() {
 
         users.forEach(usr => {
             const roleBadge = usr.role === 'admin' 
-                ? '<span class="px-2 py-1 bg-pink-500/10 text-pink-600 border border-pink-500/20 rounded font-semibold text-xs">ผู้ดูแลระบบ</span>'
-                : '<span class="px-2 py-1 bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 rounded font-semibold text-xs">คุณครู</span>';
+                ? '<span class="px-2 py-1 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded text-xs font-semibold">Admin</span>'
+                : '<span class="px-2 py-1 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded text-xs font-semibold">Teacher</span>';
                 
             const classBadge = usr.class_name 
-                ? `<span class="px-2 py-1 bg-blue-500/10 text-blue-600 border border-blue-500/20 rounded font-semibold text-xs">${usr.class_name}</span>`
+                ? `<span class="px-2 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 rounded font-semibold text-xs">${usr.class_name}</span>`
                 : '<span class="text-xs text-slate-400 font-medium">-</span>';
 
             tableHTML += `
                 <tr>
-                    <td class="font-bold text-slate-800">${usr.username}</td>
-                    <td class="font-medium text-slate-700">${usr.nickname || '-'}</td>
-                    <td class="font-medium text-slate-800">${usr.first_name} ${usr.last_name}</td>
+                    <td class="font-bold text-slate-100">${usr.username}</td>
+                    <td class="font-medium text-slate-300">${usr.nickname || '-'}</td>
+                    <td class="font-medium text-slate-200">${usr.first_name} ${usr.last_name}</td>
                     <td>${roleBadge}</td>
                     <td>${classBadge}</td>
-                    <td class="font-mono text-xs text-slate-500">${usr.password}</td>
+                    <td class="font-mono text-xs text-slate-400">${usr.password}</td>
                     <td>
                         <div class="flex gap-2">
                             <button onclick="editUserPrompt('${usr.id}', '${usr.username.replace(/'/g, "\\'")}', '${usr.password.replace(/'/g, "\\'")}', '${usr.role}', '${usr.first_name.replace(/'/g, "\\'")}', '${usr.last_name.replace(/'/g, "\\'")}', '${(usr.nickname || '').replace(/'/g, "\\'")}', '${(usr.class_name || '').replace(/'/g, "\\'")}')" class="text-indigo-400 hover:text-indigo-300 font-semibold text-xs bg-indigo-500/10 px-2 py-1 rounded border border-indigo-500/20">แก้ไข</button>
