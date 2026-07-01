@@ -43,7 +43,7 @@ async function showAdminLogin() {
     });
 
     if (formValues) {
-        sessionStorage.setItem('adminSession', 'true');
+        localStorage.setItem('adminSession', 'true');
         showSection('admin-section');
         initAdminDashboard();
         
@@ -58,7 +58,7 @@ async function showAdminLogin() {
 
 // Check session on load or toggle
 function checkAdminSession() {
-    if (sessionStorage.getItem('adminSession') === 'true') {
+    if (localStorage.getItem('adminSession') === 'true') {
         showSection('admin-section');
         initAdminDashboard();
     } else {
@@ -67,7 +67,7 @@ function checkAdminSession() {
 }
 
 function exitAdmin() {
-    sessionStorage.removeItem('adminSession');
+    localStorage.removeItem('adminSession');
     // Check teacher session to redirect back
     const session = localStorage.getItem('teacherInfo');
     if (session) {
@@ -1067,10 +1067,11 @@ async function loadAdminUsers() {
                 <thead>
                     <tr>
                         <th style="width: 15%">ชื่อผู้ใช้ (Username)</th>
-                        <th style="width: 15%">ชื่อเล่น</th>
-                        <th style="width: 25%">ชื่อจริง-นามสกุล</th>
-                        <th style="width: 15%">บทบาท (Role)</th>
-                        <th style="width: 15%">รหัสผ่าน</th>
+                        <th style="width: 12%">ชื่อเล่น</th>
+                        <th style="width: 23%">ชื่อจริง-นามสกุล</th>
+                        <th style="width: 12%">บทบาท (Role)</th>
+                        <th style="width: 13%">ชั้นเรียนประจำ</th>
+                        <th style="width: 10%">รหัสผ่าน</th>
                         <th style="width: 15%">จัดการ</th>
                     </tr>
                 </thead>
@@ -1082,16 +1083,21 @@ async function loadAdminUsers() {
                 ? '<span class="px-2 py-1 bg-pink-500/10 text-pink-600 border border-pink-500/20 rounded font-semibold text-xs">ผู้ดูแลระบบ</span>'
                 : '<span class="px-2 py-1 bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 rounded font-semibold text-xs">คุณครู</span>';
                 
+            const classBadge = usr.class_name 
+                ? `<span class="px-2 py-1 bg-blue-500/10 text-blue-600 border border-blue-500/20 rounded font-semibold text-xs">${usr.class_name}</span>`
+                : '<span class="text-xs text-slate-400 font-medium">-</span>';
+
             tableHTML += `
                 <tr>
                     <td class="font-bold text-slate-800">${usr.username}</td>
                     <td class="font-medium text-slate-700">${usr.nickname || '-'}</td>
                     <td class="font-medium text-slate-800">${usr.first_name} ${usr.last_name}</td>
                     <td>${roleBadge}</td>
+                    <td>${classBadge}</td>
                     <td class="font-mono text-xs text-slate-500">${usr.password}</td>
                     <td>
                         <div class="flex gap-2">
-                            <button onclick="editUserPrompt('${usr.id}', '${usr.username.replace(/'/g, "\\'")}', '${usr.password.replace(/'/g, "\\'")}', '${usr.role}', '${usr.first_name.replace(/'/g, "\\'")}', '${usr.last_name.replace(/'/g, "\\'")}', '${(usr.nickname || '').replace(/'/g, "\\'")}')" class="text-indigo-400 hover:text-indigo-300 font-semibold text-xs bg-indigo-500/10 px-2 py-1 rounded border border-indigo-500/20">แก้ไข</button>
+                            <button onclick="editUserPrompt('${usr.id}', '${usr.username.replace(/'/g, "\\'")}', '${usr.password.replace(/'/g, "\\'")}', '${usr.role}', '${usr.first_name.replace(/'/g, "\\'")}', '${usr.last_name.replace(/'/g, "\\'")}', '${(usr.nickname || '').replace(/'/g, "\\'")}', '${(usr.class_name || '').replace(/'/g, "\\'")}')" class="text-indigo-400 hover:text-indigo-300 font-semibold text-xs bg-indigo-500/10 px-2 py-1 rounded border border-indigo-500/20">แก้ไข</button>
                             <button onclick="deleteUserPrompt('${usr.id}', '${usr.username.replace(/'/g, "\\'")}', '${usr.role}')" class="text-red-400 hover:text-red-300 font-semibold text-xs bg-red-500/10 px-2 py-1 rounded border border-red-500/20" ${usr.username === 'uj-admin' ? 'disabled title="ไม่สามารถลบผู้ดูแลระบบหลักได้"' : ''}>ลบ</button>
                         </div>
                     </td>
@@ -1125,6 +1131,18 @@ async function loadAdminUsers() {
 }
 
 async function addUserPrompt() {
+    let classes = [];
+    try {
+        classes = await window.db.getClasses();
+    } catch (err) {
+        console.error('Error fetching classes for user prompt:', err);
+    }
+
+    let classOptions = '<option value="">-- ไม่มีห้องเรียนประจำชั้น --</option>';
+    classes.forEach(c => {
+        classOptions += `<option value="${c.name}">${c.name} (${c.level})</option>`;
+    });
+
     const { value: formValues } = await Swal.fire({
         title: 'เพิ่มผู้ใช้งานใหม่',
         html: `
@@ -1141,6 +1159,12 @@ async function addUserPrompt() {
                 <select id="new-usr-role" class="input-field">
                     <option value="teacher">คุณครู (Teacher)</option>
                     <option value="admin">ผู้ดูแลระบบ (Admin)</option>
+                </select>
+            </div>
+            <div id="new-usr-class-container" class="text-left mb-3">
+                <label class="input-label">ชั้นเรียนประจำ (Assigned Class)</label>
+                <select id="new-usr-class" class="input-field">
+                    ${classOptions}
                 </select>
             </div>
             <div class="text-left mb-3">
@@ -1161,10 +1185,26 @@ async function addUserPrompt() {
         confirmButtonText: 'เพิ่มผู้ใช้',
         cancelButtonText: 'ยกเลิก',
         showCancelButton: true,
+        didOpen: () => {
+            const roleSelect = document.getElementById('new-usr-role');
+            const classContainer = document.getElementById('new-usr-class-container');
+            if (roleSelect && classContainer) {
+                roleSelect.addEventListener('change', () => {
+                    if (roleSelect.value === 'teacher') {
+                        classContainer.style.display = 'block';
+                    } else {
+                        classContainer.style.display = 'none';
+                        document.getElementById('new-usr-class').value = '';
+                    }
+                });
+            }
+        },
         preConfirm: () => {
             const username = document.getElementById('new-usr-username').value.trim();
             const password = document.getElementById('new-usr-password').value.trim();
             const role = document.getElementById('new-usr-role').value;
+            const classNameInput = document.getElementById('new-usr-class');
+            const className = (role === 'teacher' && classNameInput) ? classNameInput.value : '';
             const nickname = document.getElementById('new-usr-nickname').value.trim();
             const firstName = document.getElementById('new-usr-firstname').value.trim();
             const lastName = document.getElementById('new-usr-lastname').value.trim();
@@ -1173,7 +1213,7 @@ async function addUserPrompt() {
                 Swal.showValidationMessage('กรุณากรอกข้อมูลให้ครบถ้วน');
                 return false;
             }
-            return { username, password, role, nickname, firstName, lastName };
+            return { username, password, role, nickname, firstName, lastName, className };
         }
     });
 
@@ -1191,7 +1231,8 @@ async function addUserPrompt() {
                 formValues.role, 
                 formValues.firstName, 
                 formValues.lastName, 
-                formValues.nickname
+                formValues.nickname,
+                formValues.className
             );
 
             Swal.fire('เพิ่มสำเร็จ!', `เพิ่มผู้ใช้ ${formValues.username} เรียบร้อยแล้ว`, 'success');
@@ -1202,7 +1243,19 @@ async function addUserPrompt() {
     }
 }
 
-async function editUserPrompt(id, currentUsername, currentPassword, currentRole, currentFirstName, currentLastName, currentNickname) {
+async function editUserPrompt(id, currentUsername, currentPassword, currentRole, currentFirstName, currentLastName, currentNickname, currentClassName = '') {
+    let classes = [];
+    try {
+        classes = await window.db.getClasses();
+    } catch (err) {
+        console.error('Error fetching classes for user prompt:', err);
+    }
+
+    let classOptions = '<option value="">-- ไม่มีห้องเรียนประจำชั้น --</option>';
+    classes.forEach(c => {
+        classOptions += `<option value="${c.name}" ${c.name === currentClassName ? 'selected' : ''}>${c.name} (${c.level})</option>`;
+    });
+
     const { value: formValues } = await Swal.fire({
         title: 'แก้ไขข้อมูลผู้ใช้งาน',
         html: `
@@ -1219,6 +1272,12 @@ async function editUserPrompt(id, currentUsername, currentPassword, currentRole,
                 <select id="edit-usr-role" class="input-field" ${currentUsername === 'uj-admin' ? 'disabled' : ''}>
                     <option value="teacher" ${currentRole === 'teacher' ? 'selected' : ''}>คุณครู (Teacher)</option>
                     <option value="admin" ${currentRole === 'admin' ? 'selected' : ''}>ผู้ดูแลระบบ (Admin)</option>
+                </select>
+            </div>
+            <div id="edit-usr-class-container" class="text-left mb-3" style="display: ${currentRole === 'teacher' ? 'block' : 'none'};">
+                <label class="input-label">ชั้นเรียนประจำ (Assigned Class)</label>
+                <select id="edit-usr-class" class="input-field">
+                    ${classOptions}
                 </select>
             </div>
             <div class="text-left mb-3">
@@ -1239,10 +1298,26 @@ async function editUserPrompt(id, currentUsername, currentPassword, currentRole,
         confirmButtonText: 'บันทึกการแก้ไข',
         cancelButtonText: 'ยกเลิก',
         showCancelButton: true,
+        didOpen: () => {
+            const roleSelect = document.getElementById('edit-usr-role');
+            const classContainer = document.getElementById('edit-usr-class-container');
+            if (roleSelect && classContainer) {
+                roleSelect.addEventListener('change', () => {
+                    if (roleSelect.value === 'teacher') {
+                        classContainer.style.display = 'block';
+                    } else {
+                        classContainer.style.display = 'none';
+                        document.getElementById('edit-usr-class').value = '';
+                    }
+                });
+            }
+        },
         preConfirm: () => {
             const username = document.getElementById('edit-usr-username').value.trim();
             const password = document.getElementById('edit-usr-password').value.trim();
             const role = document.getElementById('edit-usr-role').disabled ? currentRole : document.getElementById('edit-usr-role').value;
+            const classNameInput = document.getElementById('edit-usr-class');
+            const className = (role === 'teacher' && classNameInput) ? classNameInput.value : '';
             const nickname = document.getElementById('edit-usr-nickname').value.trim();
             const firstName = document.getElementById('edit-usr-firstname').value.trim();
             const lastName = document.getElementById('edit-usr-lastname').value.trim();
@@ -1251,7 +1326,7 @@ async function editUserPrompt(id, currentUsername, currentPassword, currentRole,
                 Swal.showValidationMessage('กรุณากรอกข้อมูลให้ครบถ้วน');
                 return false;
             }
-            return { username, password, role, nickname, firstName, lastName };
+            return { username, password, role, nickname, firstName, lastName, className };
         }
     });
 
@@ -1270,7 +1345,8 @@ async function editUserPrompt(id, currentUsername, currentPassword, currentRole,
                 formValues.role, 
                 formValues.firstName, 
                 formValues.lastName, 
-                formValues.nickname
+                formValues.nickname,
+                formValues.className
             );
 
             Swal.fire('แก้ไขสำเร็จ!', 'อัปเดตข้อมูลผู้ใช้งานเรียบร้อยแล้ว', 'success');
